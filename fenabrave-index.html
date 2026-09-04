@@ -184,7 +184,7 @@
 <header>
   <div>
     <h1 data-en="📊 Fenabrave — Vehicle Registrations Dashboard">📊 Fenabrave — Dashboard de Emplacamentos</h1>
-    <div class="sub" data-en="Passenger cars · Apr/2025 – Jul/2026 &nbsp;|&nbsp; Updated July 2026">Automóveis · Abr/2025 – Jul/2026 &nbsp;|&nbsp; Atualizado em julho de 2026</div>
+    <div class="sub" data-en="Passenger cars · Apr/2025 – Ago/2026 &nbsp;|&nbsp; Updated August 2026">Automóveis · Abr/2025 – Ago/2026 &nbsp;|&nbsp; Atualizado em agosto de 2026</div>
   </div>
   <div style="display:flex;align-items:center;gap:14px">
     <div style="display:flex;gap:5px">
@@ -246,7 +246,7 @@
   </div>
   <div class="grid grid-2">
     <div class="chart-card">
-      <div class="chart-title" data-en="Latest Month Ranking (Jul/2026)">Ranking do Último Mês (Jul/2026)</div>
+      <div class="chart-title" data-en="Latest Month Ranking (Ago/2026)">Ranking do Último Mês (Ago/2026)</div>
       <div class="chart-sub" data-en="Registration volume">Volume de emplacamentos</div>
       <div class="chart-wrap"><canvas id="chartMarcasBar"></canvas></div>
     </div>
@@ -259,7 +259,7 @@
   <div style="height:20px"></div>
   <div class="chart-card full">
     <div class="chart-title" data-en="Models with Highest YoY Growth — Retail">Modelos com Maior Crescimento YoY — Varejo</div>
-    <div class="chart-sub" data-en="Jul/2026 vs. Jul/2025 · only models present in both periods · sorted by growth">Comparação Julho/2026 vs Julho/2025 · apenas modelos presentes nos dois períodos · ordenados por crescimento</div>
+    <div class="chart-sub" data-en="Ago/2026 vs. Ago/2025 · only models present in both periods · sorted by growth">Comparação Agosto/2026 vs Agosto/2025 · apenas modelos presentes nos dois períodos · ordenados por crescimento</div>
     <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap">
       <label style="font-size:.8rem;color:var(--text2)" data-en="Show:">Mostrar:</label>
       <select id="yoyModelFilter" onchange="updateYoyChart()" style="padding:5px 12px;border-radius:8px;border:1px solid var(--border);font-size:.82rem;background:var(--card);cursor:pointer">
@@ -375,7 +375,12 @@
 //  i18n (PT / EN) — idioma salvo no navegador; o toggle recarrega a página
 // ══════════════════════════════════════════════
 let LANG = (localStorage.getItem('fnbLang') === 'en') ? 'en' : 'pt';
-const t = (pt, en) => LANG === 'en' ? en : pt;
+// quando embutido no hub, o ?lang=en|pt da URL tem prioridade (o hub controla o idioma)
+try { const _ul = new URLSearchParams(location.search).get('lang'); if (_ul === 'en' || _ul === 'pt') LANG = _ul; } catch (e) {}
+// abrevia meses PT->EN em textos ingleses (ex.: "Ago/2026" -> "Aug/2026")
+const _ABBR_EN = { Abr:'Apr', Mai:'May', Ago:'Aug', Set:'Sep', Out:'Oct', Dez:'Dec', Fev:'Feb' };
+const enMes = s => String(s).replace(/\b(Abr|Mai|Ago|Set|Out|Dez|Fev)\/(\d{4})\b/g, (m, mo, y) => _ABBR_EN[mo] + '/' + y);
+const t = (pt, en) => LANG === 'en' ? enMes(en) : pt;
 const LOC = () => LANG === 'en' ? 'en-US' : 'pt-BR';
 const _MES = { jan:'Jan', fev:'Feb', mar:'Mar', abr:'Apr', mai:'May', jun:'Jun', jul:'Jul', ago:'Aug', set:'Sep', out:'Oct', nov:'Nov', dez:'Dec' };
 const _MESL = { janeiro:'January', fevereiro:'February', 'março':'March', marco:'March', abril:'April', maio:'May', junho:'June', julho:'July', agosto:'August', setembro:'September', outubro:'October', novembro:'November', dezembro:'December' };
@@ -384,7 +389,7 @@ const mesLong  = s => LANG !== 'en' ? s : String(s).replace(/[A-Za-zçÇ]+/, m =
 function setLang(l){ localStorage.setItem('fnbLang', l); location.reload(); }
 function applyStaticI18n(){
   document.documentElement.lang = LANG;
-  if (LANG === 'en') document.querySelectorAll('[data-en]').forEach(e => { e.innerHTML = e.getAttribute('data-en'); });
+  if (LANG === 'en') document.querySelectorAll('[data-en]').forEach(e => { e.innerHTML = enMes(e.getAttribute('data-en')); });
   const bp = document.getElementById('langPt'), be = document.getElementById('langEn');
   if (bp) bp.classList.toggle('on', LANG === 'pt');
   if (be) be.classList.toggle('on', LANG === 'en');
@@ -395,55 +400,55 @@ applyStaticI18n();
 //  DADOS
 // ══════════════════════════════════════════════
 const D = {
-  labels: ["Abr/25","Mai/25","Jun/25","Jul/25","Ago/25","Set/25","Out/25","Nov/25","Dez/25","Jan/26","Fev/26","Mar/26","Abr/26","Mai/26","Jun/26","Jul/26"],
-  labelsLong: ["Abril/2025","Maio/2025","Junho/2025","Julho/2025","Agosto/2025","Setembro/2025","Outubro/2025","Novembro/2025","Dezembro/2025","Janeiro/2026","Fevereiro/2026","Março/2026","Abril/2026","Maio/2026","Junho/2026","Julho/2026"],
-  autos: [152267,167540,159128,181787,172280,178548,192752,182044,210732,125136,140548,206375,187313,214300,212902,212691],
-  ch:    [15315,18936,16221,21629,21583,22671,24467,23569,31556,21209,22143,34797,38206,47480,49628,58287],
-  excl:  [136952,148604,142907,160158,150697,155877,168285,158475,179176,103927,118405,171578,149107,166820,163274,154404],
-  chShare:[10.06,11.30,10.19,11.90,12.53,12.70,12.69,12.95,14.97,16.95,15.75,16.86,20.40,22.16,23.31,27.4],
-  yoyAnt:[164304,143991,163786,178022,170950,171640,195170,193683,189822,123344,134769,141532,152257,167540,159128,181787],
-  yoyPct:[-7.3,16.4,-2.8,2.1,0.8,4.0,-1.2,-6.0,11.0,1.5,4.3,45.8,23.0,27.9,33.8,17],
-  momPct:[null,10.0,-5.0,14.2,-5.2,3.6,8.0,-5.6,15.8,-40.6,12.3,46.8,-9.2,14.4,-0.7,-0.1],
-  hib:   [14925,15155,15267,18015,17533,18955,19702,18609,27823,18995,19250,25630,25767,30335,32563,34961],
-  ele:   [4678,6936,5873,6953,7594,8023,7826,7202,11456,8198,8654,13991,17468,20878,21018,25698],
+  labels: ["Abr/25","Mai/25","Jun/25","Jul/25","Ago/25","Set/25","Out/25","Nov/25","Dez/25","Jan/26","Fev/26","Mar/26","Abr/26","Mai/26","Jun/26","Jul/26","Ago/26"],
+  labelsLong: ["Abril/2025","Maio/2025","Junho/2025","Julho/2025","Agosto/2025","Setembro/2025","Outubro/2025","Novembro/2025","Dezembro/2025","Janeiro/2026","Fevereiro/2026","Março/2026","Abril/2026","Maio/2026","Junho/2026","Julho/2026","Agosto/2026"],
+  autos: [152267,167540,159128,181787,172280,178548,192752,182044,210732,125136,140548,206375,187313,214300,212902,212691,212876],
+  ch:    [15315,18936,16221,21629,21583,22671,24467,23569,31556,21209,22143,34797,38206,47480,49628,58287,58968],
+  excl:  [136952,148604,142907,160158,150697,155877,168285,158475,179176,103927,118405,171578,149107,166820,163274,154404,153908],
+  chShare:[10.06,11.30,10.19,11.90,12.53,12.70,12.69,12.95,14.97,16.95,15.75,16.86,20.40,22.16,23.31,27.4,27.7],
+  yoyAnt:[164304,143991,163786,178022,170950,171640,195170,193683,189822,123344,134769,141532,152257,167540,159128,181787,172280],
+  yoyPct:[-7.3,16.4,-2.8,2.1,0.8,4.0,-1.2,-6.0,11.0,1.5,4.3,45.8,23.0,27.9,33.8,17,23.6],
+  momPct:[null,10.0,-5.0,14.2,-5.2,3.6,8.0,-5.6,15.8,-40.6,12.3,46.8,-9.2,14.4,-0.7,-0.1,0.1],
+  hib:   [14925,15155,15267,18015,17533,18955,19702,18609,27823,18995,19250,25630,25767,30335,32563,34961,35304],
+  ele:   [4678,6936,5873,6953,7594,8023,7826,7202,11456,8198,8654,13991,17468,20878,21018,25698,27061],
   top8:  ["VW","FIAT","GM","HYUNDAI","BYD","JEEP","TOYOTA","HONDA"],
   marcas: {
-    VW:      [26687,31630,32192,35927,33869,31530,35303,35740,39245,22656,26046,37216,31989,39505,42425,36183],
-    FIAT:    [24548,26363,24258,31011,27862,24932,27739,25550,29195,17191,21789,27264,23638,25625,27234,25136],
-    GM:      [16016,16889,17554,20094,17933,20669,21630,23023,24252,13229,14144,23857,20677,23172,22027,24626],
-    HYUNDAI: [16252,18649,15851,16234,16682,18803,24029,19890,20585,10176,12116,19147,18557,20234,16425,13263],
-    BYD:     [8341,9293,8077,9616,9749,9934,10127,9726,15530,9755,11379,16277,18398,21674,21219,23423],
-    JEEP:    [9288,10530,9156,9960,9043,11540,12700,11964,13358,8893,8235,10117,8529,10395,10255,9123],
-    TOYOTA:  [12390,11189,10331,11921,12053,11907,7452,3980,7374,5310,6976,11736,10364,10654,10456,11767],
-    HONDA:   [8297,9260,9186,7433,7473,7982,10067,8975,10832,6722,7574,9910,9016,10288,10033,9811],
+    VW:      [26687,31630,32192,35927,33869,31530,35303,35740,39245,22656,26046,37216,31989,39505,42425,36183,35617],
+    FIAT:    [24548,26363,24258,31011,27862,24932,27739,25550,29195,17191,21789,27264,23638,25625,27234,25136,26375],
+    GM:      [16016,16889,17554,20094,17933,20669,21630,23023,24252,13229,14144,23857,20677,23172,22027,24626,23120],
+    HYUNDAI: [16252,18649,15851,16234,16682,18803,24029,19890,20585,10176,12116,19147,18557,20234,16425,13263,17013],
+    BYD:     [8341,9293,8077,9616,9749,9934,10127,9726,15530,9755,11379,16277,18398,21674,21219,23423,24427],
+    JEEP:    [9288,10530,9156,9960,9043,11540,12700,11964,13358,8893,8235,10117,8529,10395,10255,9123,9026],
+    TOYOTA:  [12390,11189,10331,11921,12053,11907,7452,3980,7374,5310,6976,11736,10364,10654,10456,11767,9956],
+    HONDA:   [8297,9260,9186,7433,7473,7982,10067,8975,10832,6722,7574,9910,9016,10288,10033,9811,9677],
   },
   chMarcas: {
-    BYD:           [8341,9293,8077,9616,9749,9934,10127,9726,15530,9755,11379,16277,18398,21674,21219,23423],
-    "CAOA CHERY":  [4643,6152,4742,6722,6750,7366,8083,7052,7208,3548,3401,8771,7482,6660,7152,7354],
-    GWM:           [2331,3216,3021,3932,3825,3965,4796,4593,5144,4171,4640,5923,4579,6685,6106,8498],
-    "OMODA JAECOO":[0,275,381,721,720,838,862,1213,1943,1689,1834,2451,2826,3176,4832,5759],
-    GEELY:         [0,0,0,0,0,0,0,985,1731,1337,422,1375,4003,5173,5835,7458],
-    GAC:           [0,0,0,638,539,568,599,0,0,709,467,0,918,1364,1490,1947],
-    "CAOA CHANGAN":[0,0,0,0,0,0,0,0,0,0,0,0,0,1164,1054,1745],
-    LEAPMOTOR:     [0,0,0,0,0,0,0,0,0,0,0,0,0,893,989,1106],
-    JETOUR:        [0,0,0,0,0,0,0,0,0,0,0,0,0,691,951,997],
+    BYD:           [8341,9293,8077,9616,9749,9934,10127,9726,15530,9755,11379,16277,18398,21674,21219,23423,24427],
+    "CAOA CHERY":  [4643,6152,4742,6722,6750,7366,8083,7052,7208,3548,3401,8771,7482,6660,7152,7354,6014],
+    GWM:           [2331,3216,3021,3932,3825,3965,4796,4593,5144,4171,4640,5923,4579,6685,6106,8498,9204],
+    "OMODA JAECOO":[0,275,381,721,720,838,862,1213,1943,1689,1834,2451,2826,3176,4832,5759,5902],
+    GEELY:         [0,0,0,0,0,0,0,985,1731,1337,422,1375,4003,5173,5835,7458,7524],
+    GAC:           [0,0,0,638,539,568,599,0,0,709,467,0,918,1364,1490,1947,1851],
+    "CAOA CHANGAN":[0,0,0,0,0,0,0,0,0,0,0,0,0,1164,1054,1745,1576],
+    LEAPMOTOR:     [0,0,0,0,0,0,0,0,0,0,0,0,0,893,989,1106,1017],
+    JETOUR:        [0,0,0,0,0,0,0,0,0,0,0,0,0,691,951,997,1453],
   },
   hibMarcas: {
-    BYD:     [4738,3700,3602,4128,4097,4243,4735,5240,8429,4642,4620,6376,7973,8430,8519,8664],
-    GWM:     [2140,3035,2838,3741,3405,3232,3995,3809,3998,3096,3742,4440,3292,4975,4647,6280],
-    FIAT:    [3932,4298,4348,4690,3576,4011,3938,2986,3428,2206,1798,2540,2276,2401,1747,1714],
-    TOYOTA:  [1526,1273,1254,1352,2470,3036,1884,1953,5189,3944,4261,5028,4138,3951,3648,3586],
-    "OMODA JAECOO":[0,0,0,620,635,740,778,1146,1875,1648,1772,2382,2710,3095,4794,5741],
-    "M.BENZ":[717,807,788,725,708,833,962,700,740,0,513,709,0,581,627,624],
+    BYD:     [4738,3700,3602,4128,4097,4243,4735,5240,8429,4642,4620,6376,7973,8430,8519,8664,8350],
+    GWM:     [2140,3035,2838,3741,3405,3232,3995,3809,3998,3096,3742,4440,3292,4975,4647,6280,6944],
+    FIAT:    [3932,4298,4348,4690,3576,4011,3938,2986,3428,2206,1798,2540,2276,2401,1747,1714,2167],
+    TOYOTA:  [1526,1273,1254,1352,2470,3036,1884,1953,5189,3944,4261,5028,4138,3951,3648,3586,2831],
+    "OMODA JAECOO":[0,0,0,620,635,740,778,1146,1875,1648,1772,2382,2710,3095,4794,5741,5787],
+    "M.BENZ":[717,807,788,725,708,833,962,700,740,0,513,709,0,581,627,624,442],
   },
   eleMarcas: {
-    BYD:    [3602,5591,4475,5486,5649,5687,5391,4485,7099,5113,6759,9901,10425,13244,12699,14759],
-    GEELY:  [0,0,0,0,0,196,265,985,1731,1337,422,1375,3761,4567,4663,6222],
-    VOLVO:  [424,514,464,329,375,430,505,350,575,390,183,441,419,347,339,300],
-    GM:     [0,0,0,0,317,421,492,296,613,396,443,982,1247,1122,871,592],
-    GWM:    [191,181,183,191,320,429,343,214,372,193,226,313,365,490,383,1035],
+    BYD:    [3602,5591,4475,5486,5649,5687,5391,4485,7099,5113,6759,9901,10425,13244,12699,14759,16077],
+    GEELY:  [0,0,0,0,0,196,265,985,1731,1337,422,1375,3761,4567,4663,6222,6178],
+    VOLVO:  [424,514,464,329,375,430,505,350,575,390,183,441,419,347,339,300,178],
+    GM:     [0,0,0,0,317,421,492,296,613,396,443,982,1247,1122,871,592,571],
+    GWM:    [191,181,183,191,320,429,343,214,372,193,226,313,365,490,383,1035,1286],
   },
-  varejo: {"Abril/2025":[{"posicao":1,"modelo":"HONDA/HR-V","quantidade":4339},{"posicao":2,"modelo":"HYUNDAI/CRETA","quantidade":4081},{"posicao":3,"modelo":"VW/T CROSS","quantidade":3907},{"posicao":4,"modelo":"TOYOTA/COROLLA CROSS","quantidade":3648},{"posicao":5,"modelo":"VW/POLO","quantidade":3555},{"posicao":6,"modelo":"GM/ONIX","quantidade":3132},{"posicao":7,"modelo":"FIAT/FASTBACK","quantidade":2999},{"posicao":8,"modelo":"BYD/SONG","quantidade":2979},{"posicao":9,"modelo":"VW/NIVUS","quantidade":2820},{"posicao":10,"modelo":"GM/TRACKER","quantidade":2567},{"posicao":11,"modelo":"HYUNDAI/HB20","quantidade":2494},{"posicao":12,"modelo":"FIAT/PULSE","quantidade":2121},{"posicao":13,"modelo":"BYD/DOLPHIN MINI","quantidade":2101},{"posicao":14,"modelo":"FIAT/ARGO","quantidade":2058},{"posicao":15,"modelo":"JEEP/RENEGADE","quantidade":1983}],"Maio/2025":[{"posicao":1,"modelo":"HONDA/HR-V","quantidade":4657},{"posicao":2,"modelo":"HYUNDAI/CRETA","quantidade":4021},{"posicao":3,"modelo":"VW/T CROSS","quantidade":3997},{"posicao":4,"modelo":"VW/POLO","quantidade":3541},{"posicao":5,"modelo":"FIAT/FASTBACK","quantidade":3377},{"posicao":6,"modelo":"VW/NIVUS","quantidade":3222},{"posicao":7,"modelo":"CAOA CHERY/TIGGO 7","quantidade":3047},{"posicao":8,"modelo":"GM/ONIX","quantidade":3004},{"posicao":9,"modelo":"GM/TRACKER","quantidade":2996},{"posicao":10,"modelo":"BYD/SONG","quantidade":2807},{"posicao":11,"modelo":"TOYOTA/COROLLA CROSS","quantidade":2651},{"posicao":12,"modelo":"HYUNDAI/HB20","quantidade":2495},{"posicao":13,"modelo":"BYD/DOLPHIN MINI","quantidade":2442},{"posicao":14,"modelo":"FIAT/ARGO","quantidade":2204},{"posicao":15,"modelo":"NISSAN/KICKS","quantidade":2051}],"Junho/2025":[{"posicao":1,"modelo":"HYUNDAI/CRETA","quantidade":5427},{"posicao":2,"modelo":"HONDA/HR-V","quantidade":4140},{"posicao":3,"modelo":"VW/T CROSS","quantidade":3603},{"posicao":4,"modelo":"VW/NIVUS","quantidade":3504},{"posicao":5,"modelo":"FIAT/FASTBACK","quantidade":3282},{"posicao":6,"modelo":"GM/ONIX","quantidade":3236},{"posicao":7,"modelo":"VW/POLO","quantidade":3123},{"posicao":8,"modelo":"GM/TRACKER","quantidade":2931},{"posicao":9,"modelo":"BYD/SONG","quantidade":2689},{"posicao":10,"modelo":"TOYOTA/COROLLA CROSS","quantidade":2682},{"posicao":11,"modelo":"CAOA CHERY/TIGGO 7","quantidade":2480},{"posicao":12,"modelo":"HYUNDAI/HB20","quantidade":2273},{"posicao":13,"modelo":"FIAT/PULSE","quantidade":2115},{"posicao":14,"modelo":"GWM/HAVAL H6","quantidade":1921},{"posicao":15,"modelo":"FIAT/ARGO","quantidade":1821}],"Julho/2025":[{"posicao":1,"modelo":"HYUNDAI/CRETA","quantidade":6359},{"posicao":2,"modelo":"GM/TRACKER","quantidade":4928},{"posicao":3,"modelo":"VW/POLO","quantidade":4894},{"posicao":4,"modelo":"VW/NIVUS","quantidade":4726},{"posicao":5,"modelo":"FIAT/FASTBACK","quantidade":4185},{"posicao":6,"modelo":"GM/ONIX","quantidade":4141},{"posicao":7,"modelo":"VW/T CROSS","quantidade":3986},{"posicao":8,"modelo":"TOYOTA/COROLLA CROSS","quantidade":3553},{"posicao":9,"modelo":"CAOA CHERY/TIGGO 7","quantidade":3544},{"posicao":10,"modelo":"HONDA/HR-V","quantidade":3367},{"posicao":11,"modelo":"HYUNDAI/HB20","quantidade":3349},{"posicao":12,"modelo":"FIAT/PULSE","quantidade":3119},{"posicao":13,"modelo":"NISSAN/KICKS","quantidade":3091},{"posicao":14,"modelo":"VW/TERA","quantidade":2983},{"posicao":15,"modelo":"BYD/SONG","quantidade":2934}],"Agosto/2025":[{"posicao":1,"modelo":"HYUNDAI/CRETA","quantidade":5215},{"posicao":2,"modelo":"VW/POLO","quantidade":5214},{"posicao":3,"modelo":"TOYOTA/COROLLA CROSS","quantidade":4388},{"posicao":4,"modelo":"VW/NIVUS","quantidade":3902},{"posicao":5,"modelo":"FIAT/FASTBACK","quantidade":3852},{"posicao":6,"modelo":"HONDA/HR-V","quantidade":3605},{"posicao":7,"modelo":"HYUNDAI/HB20","quantidade":3438},{"posicao":8,"modelo":"FIAT/ARGO","quantidade":3389},{"posicao":9,"modelo":"GM/TRACKER","quantidade":3331},{"posicao":10,"modelo":"CAOA CHERY/TIGGO 7","quantidade":3192},{"posicao":11,"modelo":"VW/TERA","quantidade":3166},{"posicao":12,"modelo":"BYD/DOLPHIN MINI","quantidade":3036},{"posicao":13,"modelo":"GM/ONIX","quantidade":2900},{"posicao":14,"modelo":"FIAT/PULSE","quantidade":2891},{"posicao":15,"modelo":"VW/T CROSS","quantidade":2881}],"Setembro/2025":[{"posicao":1,"modelo":"HYUNDAI/CRETA","quantidade":4976},{"posicao":2,"modelo":"VW/POLO","quantidade":4542},{"posicao":3,"modelo":"TOYOTA/COROLLA CROSS","quantidade":4122},{"posicao":4,"modelo":"GM/ONIX","quantidade":4026},{"posicao":5,"modelo":"VW/TERA","quantidade":3916},{"posicao":6,"modelo":"FIAT/FASTBACK","quantidade":3792},{"posicao":7,"modelo":"GM/TRACKER","quantidade":3763},{"posicao":8,"modelo":"HONDA/HR-V","quantidade":3569},{"posicao":9,"modelo":"CAOA CHERY/TIGGO 7","quantidade":3506},{"posicao":10,"modelo":"VW/NIVUS","quantidade":3492},{"posicao":11,"modelo":"FIAT/ARGO","quantidade":3484},{"posicao":12,"modelo":"HYUNDAI/HB20","quantidade":3328},{"posicao":13,"modelo":"BYD/DOLPHIN MINI","quantidade":3067},{"posicao":14,"modelo":"NISSAN/KICKS","quantidade":2945},{"posicao":15,"modelo":"BYD/SONG","quantidade":2727}],"Outubro/2025":[{"posicao":1,"modelo":"HYUNDAI/CRETA","quantidade":5480},{"posicao":2,"modelo":"VW/TERA","quantidade":5395},{"posicao":3,"modelo":"HONDA/HR-V","quantidade":4870},{"posicao":4,"modelo":"GM/ONIX","quantidade":4332},{"posicao":5,"modelo":"CAOA CHERY/TIGGO 7","quantidade":4100},{"posicao":6,"modelo":"GM/TRACKER","quantidade":3855},{"posicao":7,"modelo":"VW/POLO","quantidade":3729},{"posicao":8,"modelo":"HYUNDAI/HB20","quantidade":3631},{"posicao":9,"modelo":"FIAT/FASTBACK","quantidade":3594},{"posicao":10,"modelo":"VW/NIVUS","quantidade":3433},{"posicao":11,"modelo":"FIAT/ARGO","quantidade":3418},{"posicao":12,"modelo":"NISSAN/KICKS","quantidade":3149},{"posicao":13,"modelo":"BYD/SONG","quantidade":2859},{"posicao":14,"modelo":"GWM/HAVAL H6","quantidade":2597},{"posicao":15,"modelo":"BYD/DOLPHIN MINI","quantidade":2578}],"Novembro/2025":[{"posicao":1,"modelo":"VW/TERA","quantidade":4599},{"posicao":2,"modelo":"HYUNDAI/CRETA","quantidade":4576},{"posicao":3,"modelo":"CAOA CHERY/TIGGO 7","quantidade":3883},{"posicao":4,"modelo":"GM/ONIX","quantidade":3810},{"posicao":5,"modelo":"HONDA/HR-V","quantidade":3779},{"posicao":6,"modelo":"BYD/SONG","quantidade":3595},{"posicao":7,"modelo":"HYUNDAI/HB20","quantidade":3144},{"posicao":8,"modelo":"GM/TRACKER","quantidade":3131},{"posicao":9,"modelo":"VW/POLO","quantidade":3039},{"posicao":10,"modelo":"FIAT/FASTBACK","quantidade":2921},{"posicao":11,"modelo":"VW/NIVUS","quantidade":2708},{"posicao":12,"modelo":"GWM/HAVAL H6","quantidade":2682},{"posicao":13,"modelo":"NISSAN/KICKS","quantidade":2672},{"posicao":14,"modelo":"BYD/DOLPHIN MINI","quantidade":2653},{"posicao":15,"modelo":"FIAT/ARGO","quantidade":2634}],"Dezembro/2025":[{"posicao":1,"modelo":"BYD/SONG","quantidade":6733},{"posicao":2,"modelo":"VW/TERA","quantidade":6245},{"posicao":3,"modelo":"HYUNDAI/CRETA","quantidade":5309},{"posicao":4,"modelo":"GM/TRACKER","quantidade":5069},{"posicao":5,"modelo":"GM/ONIX","quantidade":4509},{"posicao":6,"modelo":"CAOA CHERY/TIGGO 7","quantidade":4472},{"posicao":7,"modelo":"VW/POLO","quantidade":4053},{"posicao":8,"modelo":"BYD/DOLPHIN MINI","quantidade":3767},{"posicao":9,"modelo":"FIAT/FASTBACK","quantidade":3692},{"posicao":10,"modelo":"HYUNDAI/HB20","quantidade":3670},{"posicao":11,"modelo":"VW/NIVUS","quantidade":3628},{"posicao":12,"modelo":"NISSAN/KICKS","quantidade":3440},{"posicao":13,"modelo":"HONDA/HR-V","quantidade":3325},{"posicao":14,"modelo":"HONDA/WR-V","quantidade":3179},{"posicao":15,"modelo":"VW/T CROSS","quantidade":2933}],"Janeiro/2026":[{"posicao":1,"modelo":"HYUNDAI/CRETA","quantidade":3905},{"posicao":2,"modelo":"GM/TRACKER","quantidade":3685},{"posicao":3,"modelo":"VW/TERA","quantidade":3665},{"posicao":4,"modelo":"BYD/SONG","quantidade":3207},{"posicao":5,"modelo":"HYUNDAI/HB20","quantidade":3122},{"posicao":6,"modelo":"VW/POLO","quantidade":3066},{"posicao":7,"modelo":"FIAT/FASTBACK","quantidade":2890},{"posicao":8,"modelo":"GM/ONIX","quantidade":2844},{"posicao":9,"modelo":"BYD/DOLPHIN MINI","quantidade":2797},{"posicao":10,"modelo":"VW/NIVUS","quantidade":2631},{"posicao":11,"modelo":"VW/T CROSS","quantidade":2578},{"posicao":12,"modelo":"NISSAN/KICKS","quantidade":2378},{"posicao":13,"modelo":"FIAT/PULSE","quantidade":2207},{"posicao":14,"modelo":"FIAT/ARGO","quantidade":2148},{"posicao":15,"modelo":"HONDA/HR-V","quantidade":2092}],"Fevereiro/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN MINI","quantidade":4810},{"posicao":2,"modelo":"VW/TERA","quantidade":3856},{"posicao":3,"modelo":"HYUNDAI/CRETA","quantidade":3597},{"posicao":4,"modelo":"BYD/SONG","quantidade":3167},{"posicao":5,"modelo":"GM/TRACKER","quantidade":3023},{"posicao":6,"modelo":"VW/NIVUS","quantidade":2971},{"posicao":7,"modelo":"VW/POLO","quantidade":2831},{"posicao":8,"modelo":"HONDA/WR-V","quantidade":2617},{"posicao":9,"modelo":"HYUNDAI/HB20","quantidade":2559},{"posicao":10,"modelo":"FIAT/FASTBACK","quantidade":2464},{"posicao":11,"modelo":"GWM/HAVAL H6","quantidade":2399},{"posicao":12,"modelo":"CAOA CHERY/TIGGO 7","quantidade":2172},{"posicao":13,"modelo":"TOYOTA/COROLLA CROSS","quantidade":2111},{"posicao":14,"modelo":"GM/ONIX","quantidade":2080},{"posicao":15,"modelo":"HONDA/HR-V","quantidade":2036}],"Março/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN MINI","quantidade":6077},{"posicao":2,"modelo":"CAOA CHERY/TIGGO 5X","quantidade":5005},{"posicao":3,"modelo":"HYUNDAI/CRETA","quantidade":4803},{"posicao":4,"modelo":"VW/TERA","quantidade":4505},{"posicao":5,"modelo":"VW/NIVUS","quantidade":4225},{"posicao":6,"modelo":"GM/TRACKER","quantidade":3979},{"posicao":7,"modelo":"BYD/SONG","quantidade":3789},{"posicao":8,"modelo":"VW/POLO","quantidade":3646},{"posicao":9,"modelo":"TOYOTA/YARIS CROSS","quantidade":3341},{"posicao":10,"modelo":"GM/ONIX","quantidade":3248},{"posicao":11,"modelo":"HONDA/WR-V","quantidade":2920},{"posicao":12,"modelo":"HYUNDAI/HB20","quantidade":2917},{"posicao":13,"modelo":"GWM/HAVAL H6","quantidade":2913},{"posicao":14,"modelo":"HONDA/HR-V","quantidade":2900},{"posicao":15,"modelo":"VW/T CROSS","quantidade":2831}],"Abril/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN MINI","quantidade":5943},{"posicao":2,"modelo":"HYUNDAI/CRETA","quantidade":4895},{"posicao":3,"modelo":"BYD/SONG","quantidade":4078},{"posicao":4,"modelo":"CAOA CHERY/TIGGO 5X","quantidade":3915},{"posicao":5,"modelo":"VW/NIVUS","quantidade":3857},{"posicao":6,"modelo":"GM/TRACKER","quantidade":3672},{"posicao":7,"modelo":"GEELY/EX2","quantidade":3590},{"posicao":8,"modelo":"VW/TERA","quantidade":3470},{"posicao":9,"modelo":"TOYOTA/YARIS CROSS","quantidade":3431},{"posicao":10,"modelo":"VW/POLO","quantidade":3238},{"posicao":11,"modelo":"HONDA/HR-V","quantidade":3042},{"posicao":12,"modelo":"GM/ONIX","quantidade":2972},{"posicao":13,"modelo":"BYD/DOLPHIN","quantidade":2811},{"posicao":14,"modelo":"FIAT/FASTBACK","quantidade":2755},{"posicao":15,"modelo":"VW/T CROSS","quantidade":2655}],"Maio/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN MINI","quantidade":6478},{"posicao":2,"modelo":"HYUNDAI/CRETA","quantidade":4821},{"posicao":3,"modelo":"GEELY/EX2","quantidade":4250},{"posicao":4,"modelo":"BYD/DOLPHIN","quantidade":4163},{"posicao":5,"modelo":"BYD/SONG","quantidade":4029},{"posicao":6,"modelo":"GM/TRACKER","quantidade":3357},{"posicao":7,"modelo":"TOYOTA/YARIS CROSS","quantidade":3214},{"posicao":8,"modelo":"GWM/HAVAL H6","quantidade":3213},{"posicao":9,"modelo":"VW/NIVUS","quantidade":3177},{"posicao":10,"modelo":"GM/ONIX","quantidade":3121},{"posicao":11,"modelo":"VW/T CROSS","quantidade":3100},{"posicao":12,"modelo":"VW/TERA","quantidade":3060},{"posicao":13,"modelo":"VW/POLO","quantidade":2842},{"posicao":14,"modelo":"HONDA/HR-V","quantidade":2789},{"posicao":15,"modelo":"HYUNDAI/HB20","quantidade":2658}],"Junho/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN MINI","quantidade":5143},{"posicao":2,"modelo":"BYD/DOLPHIN","quantidade":4827},{"posicao":3,"modelo":"GEELY/EX2","quantidade":4363},{"posicao":4,"modelo":"BYD/SONG","quantidade":4146},{"posicao":5,"modelo":"HYUNDAI/CRETA","quantidade":4095},{"posicao":6,"modelo":"CAOA CHERY/TIGGO 5X","quantidade":3823},{"posicao":7,"modelo":"VW/T CROSS","quantidade":3433},{"posicao":8,"modelo":"VW/TERA","quantidade":3409},{"posicao":9,"modelo":"TOYOTA/YARIS CROSS","quantidade":3395},{"posicao":10,"modelo":"VW/NIVUS","quantidade":3381},{"posicao":11,"modelo":"VW/POLO","quantidade":3021},{"posicao":12,"modelo":"GM/TRACKER","quantidade":3008},{"posicao":13,"modelo":"GM/ONIX","quantidade":2994},{"posicao":14,"modelo":"FIAT/FASTBACK","quantidade":2934},{"posicao":15,"modelo":"OMODA JAECOO/JAECOO 7","quantidade":2730}],"Julho/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN","quantidade":5861},{"posicao":2,"modelo":"GEELY/EX2","quantidade":5707},{"posicao":3,"modelo":"BYD/DOLPHIN MINI","quantidade":5537},{"posicao":4,"modelo":"VW/TERA","quantidade":4470},{"posicao":5,"modelo":"HYUNDAI/CRETA","quantidade":4185},{"posicao":6,"modelo":"TOYOTA/YARIS CROSS","quantidade":4096},{"posicao":7,"modelo":"GM/TRACKER","quantidade":4091},{"posicao":8,"modelo":"GWM/HAVAL H6","quantidade":3841},{"posicao":9,"modelo":"CAOA CHERY/TIGGO 5X","quantidade":3828},{"posicao":10,"modelo":"BYD/SONG","quantidade":3814},{"posicao":11,"modelo":"GM/ONIX","quantidade":3620},{"posicao":12,"modelo":"VW/POLO","quantidade":3510},{"posicao":13,"modelo":"VW/NIVUS","quantidade":3283},{"posicao":14,"modelo":"VW/T CROSS","quantidade":3165},{"posicao":15,"modelo":"FIAT/FASTBACK","quantidade":3064}]},
+  varejo: {"Abril/2025":[{"posicao":1,"modelo":"HONDA/HR-V","quantidade":4339},{"posicao":2,"modelo":"HYUNDAI/CRETA","quantidade":4081},{"posicao":3,"modelo":"VW/T CROSS","quantidade":3907},{"posicao":4,"modelo":"TOYOTA/COROLLA CROSS","quantidade":3648},{"posicao":5,"modelo":"VW/POLO","quantidade":3555},{"posicao":6,"modelo":"GM/ONIX","quantidade":3132},{"posicao":7,"modelo":"FIAT/FASTBACK","quantidade":2999},{"posicao":8,"modelo":"BYD/SONG","quantidade":2979},{"posicao":9,"modelo":"VW/NIVUS","quantidade":2820},{"posicao":10,"modelo":"GM/TRACKER","quantidade":2567},{"posicao":11,"modelo":"HYUNDAI/HB20","quantidade":2494},{"posicao":12,"modelo":"FIAT/PULSE","quantidade":2121},{"posicao":13,"modelo":"BYD/DOLPHIN MINI","quantidade":2101},{"posicao":14,"modelo":"FIAT/ARGO","quantidade":2058},{"posicao":15,"modelo":"JEEP/RENEGADE","quantidade":1983}],"Maio/2025":[{"posicao":1,"modelo":"HONDA/HR-V","quantidade":4657},{"posicao":2,"modelo":"HYUNDAI/CRETA","quantidade":4021},{"posicao":3,"modelo":"VW/T CROSS","quantidade":3997},{"posicao":4,"modelo":"VW/POLO","quantidade":3541},{"posicao":5,"modelo":"FIAT/FASTBACK","quantidade":3377},{"posicao":6,"modelo":"VW/NIVUS","quantidade":3222},{"posicao":7,"modelo":"CAOA CHERY/TIGGO 7","quantidade":3047},{"posicao":8,"modelo":"GM/ONIX","quantidade":3004},{"posicao":9,"modelo":"GM/TRACKER","quantidade":2996},{"posicao":10,"modelo":"BYD/SONG","quantidade":2807},{"posicao":11,"modelo":"TOYOTA/COROLLA CROSS","quantidade":2651},{"posicao":12,"modelo":"HYUNDAI/HB20","quantidade":2495},{"posicao":13,"modelo":"BYD/DOLPHIN MINI","quantidade":2442},{"posicao":14,"modelo":"FIAT/ARGO","quantidade":2204},{"posicao":15,"modelo":"NISSAN/KICKS","quantidade":2051}],"Junho/2025":[{"posicao":1,"modelo":"HYUNDAI/CRETA","quantidade":5427},{"posicao":2,"modelo":"HONDA/HR-V","quantidade":4140},{"posicao":3,"modelo":"VW/T CROSS","quantidade":3603},{"posicao":4,"modelo":"VW/NIVUS","quantidade":3504},{"posicao":5,"modelo":"FIAT/FASTBACK","quantidade":3282},{"posicao":6,"modelo":"GM/ONIX","quantidade":3236},{"posicao":7,"modelo":"VW/POLO","quantidade":3123},{"posicao":8,"modelo":"GM/TRACKER","quantidade":2931},{"posicao":9,"modelo":"BYD/SONG","quantidade":2689},{"posicao":10,"modelo":"TOYOTA/COROLLA CROSS","quantidade":2682},{"posicao":11,"modelo":"CAOA CHERY/TIGGO 7","quantidade":2480},{"posicao":12,"modelo":"HYUNDAI/HB20","quantidade":2273},{"posicao":13,"modelo":"FIAT/PULSE","quantidade":2115},{"posicao":14,"modelo":"GWM/HAVAL H6","quantidade":1921},{"posicao":15,"modelo":"FIAT/ARGO","quantidade":1821}],"Julho/2025":[{"posicao":1,"modelo":"HYUNDAI/CRETA","quantidade":6359},{"posicao":2,"modelo":"GM/TRACKER","quantidade":4928},{"posicao":3,"modelo":"VW/POLO","quantidade":4894},{"posicao":4,"modelo":"VW/NIVUS","quantidade":4726},{"posicao":5,"modelo":"FIAT/FASTBACK","quantidade":4185},{"posicao":6,"modelo":"GM/ONIX","quantidade":4141},{"posicao":7,"modelo":"VW/T CROSS","quantidade":3986},{"posicao":8,"modelo":"TOYOTA/COROLLA CROSS","quantidade":3553},{"posicao":9,"modelo":"CAOA CHERY/TIGGO 7","quantidade":3544},{"posicao":10,"modelo":"HONDA/HR-V","quantidade":3367},{"posicao":11,"modelo":"HYUNDAI/HB20","quantidade":3349},{"posicao":12,"modelo":"FIAT/PULSE","quantidade":3119},{"posicao":13,"modelo":"NISSAN/KICKS","quantidade":3091},{"posicao":14,"modelo":"VW/TERA","quantidade":2983},{"posicao":15,"modelo":"BYD/SONG","quantidade":2934}],"Agosto/2025":[{"posicao":1,"modelo":"HYUNDAI/CRETA","quantidade":5215},{"posicao":2,"modelo":"VW/POLO","quantidade":5214},{"posicao":3,"modelo":"TOYOTA/COROLLA CROSS","quantidade":4388},{"posicao":4,"modelo":"VW/NIVUS","quantidade":3902},{"posicao":5,"modelo":"FIAT/FASTBACK","quantidade":3852},{"posicao":6,"modelo":"HONDA/HR-V","quantidade":3605},{"posicao":7,"modelo":"HYUNDAI/HB20","quantidade":3438},{"posicao":8,"modelo":"FIAT/ARGO","quantidade":3389},{"posicao":9,"modelo":"GM/TRACKER","quantidade":3331},{"posicao":10,"modelo":"CAOA CHERY/TIGGO 7","quantidade":3192},{"posicao":11,"modelo":"VW/TERA","quantidade":3166},{"posicao":12,"modelo":"BYD/DOLPHIN MINI","quantidade":3036},{"posicao":13,"modelo":"GM/ONIX","quantidade":2900},{"posicao":14,"modelo":"FIAT/PULSE","quantidade":2891},{"posicao":15,"modelo":"VW/T CROSS","quantidade":2881}],"Setembro/2025":[{"posicao":1,"modelo":"HYUNDAI/CRETA","quantidade":4976},{"posicao":2,"modelo":"VW/POLO","quantidade":4542},{"posicao":3,"modelo":"TOYOTA/COROLLA CROSS","quantidade":4122},{"posicao":4,"modelo":"GM/ONIX","quantidade":4026},{"posicao":5,"modelo":"VW/TERA","quantidade":3916},{"posicao":6,"modelo":"FIAT/FASTBACK","quantidade":3792},{"posicao":7,"modelo":"GM/TRACKER","quantidade":3763},{"posicao":8,"modelo":"HONDA/HR-V","quantidade":3569},{"posicao":9,"modelo":"CAOA CHERY/TIGGO 7","quantidade":3506},{"posicao":10,"modelo":"VW/NIVUS","quantidade":3492},{"posicao":11,"modelo":"FIAT/ARGO","quantidade":3484},{"posicao":12,"modelo":"HYUNDAI/HB20","quantidade":3328},{"posicao":13,"modelo":"BYD/DOLPHIN MINI","quantidade":3067},{"posicao":14,"modelo":"NISSAN/KICKS","quantidade":2945},{"posicao":15,"modelo":"BYD/SONG","quantidade":2727}],"Outubro/2025":[{"posicao":1,"modelo":"HYUNDAI/CRETA","quantidade":5480},{"posicao":2,"modelo":"VW/TERA","quantidade":5395},{"posicao":3,"modelo":"HONDA/HR-V","quantidade":4870},{"posicao":4,"modelo":"GM/ONIX","quantidade":4332},{"posicao":5,"modelo":"CAOA CHERY/TIGGO 7","quantidade":4100},{"posicao":6,"modelo":"GM/TRACKER","quantidade":3855},{"posicao":7,"modelo":"VW/POLO","quantidade":3729},{"posicao":8,"modelo":"HYUNDAI/HB20","quantidade":3631},{"posicao":9,"modelo":"FIAT/FASTBACK","quantidade":3594},{"posicao":10,"modelo":"VW/NIVUS","quantidade":3433},{"posicao":11,"modelo":"FIAT/ARGO","quantidade":3418},{"posicao":12,"modelo":"NISSAN/KICKS","quantidade":3149},{"posicao":13,"modelo":"BYD/SONG","quantidade":2859},{"posicao":14,"modelo":"GWM/HAVAL H6","quantidade":2597},{"posicao":15,"modelo":"BYD/DOLPHIN MINI","quantidade":2578}],"Novembro/2025":[{"posicao":1,"modelo":"VW/TERA","quantidade":4599},{"posicao":2,"modelo":"HYUNDAI/CRETA","quantidade":4576},{"posicao":3,"modelo":"CAOA CHERY/TIGGO 7","quantidade":3883},{"posicao":4,"modelo":"GM/ONIX","quantidade":3810},{"posicao":5,"modelo":"HONDA/HR-V","quantidade":3779},{"posicao":6,"modelo":"BYD/SONG","quantidade":3595},{"posicao":7,"modelo":"HYUNDAI/HB20","quantidade":3144},{"posicao":8,"modelo":"GM/TRACKER","quantidade":3131},{"posicao":9,"modelo":"VW/POLO","quantidade":3039},{"posicao":10,"modelo":"FIAT/FASTBACK","quantidade":2921},{"posicao":11,"modelo":"VW/NIVUS","quantidade":2708},{"posicao":12,"modelo":"GWM/HAVAL H6","quantidade":2682},{"posicao":13,"modelo":"NISSAN/KICKS","quantidade":2672},{"posicao":14,"modelo":"BYD/DOLPHIN MINI","quantidade":2653},{"posicao":15,"modelo":"FIAT/ARGO","quantidade":2634}],"Dezembro/2025":[{"posicao":1,"modelo":"BYD/SONG","quantidade":6733},{"posicao":2,"modelo":"VW/TERA","quantidade":6245},{"posicao":3,"modelo":"HYUNDAI/CRETA","quantidade":5309},{"posicao":4,"modelo":"GM/TRACKER","quantidade":5069},{"posicao":5,"modelo":"GM/ONIX","quantidade":4509},{"posicao":6,"modelo":"CAOA CHERY/TIGGO 7","quantidade":4472},{"posicao":7,"modelo":"VW/POLO","quantidade":4053},{"posicao":8,"modelo":"BYD/DOLPHIN MINI","quantidade":3767},{"posicao":9,"modelo":"FIAT/FASTBACK","quantidade":3692},{"posicao":10,"modelo":"HYUNDAI/HB20","quantidade":3670},{"posicao":11,"modelo":"VW/NIVUS","quantidade":3628},{"posicao":12,"modelo":"NISSAN/KICKS","quantidade":3440},{"posicao":13,"modelo":"HONDA/HR-V","quantidade":3325},{"posicao":14,"modelo":"HONDA/WR-V","quantidade":3179},{"posicao":15,"modelo":"VW/T CROSS","quantidade":2933}],"Janeiro/2026":[{"posicao":1,"modelo":"HYUNDAI/CRETA","quantidade":3905},{"posicao":2,"modelo":"GM/TRACKER","quantidade":3685},{"posicao":3,"modelo":"VW/TERA","quantidade":3665},{"posicao":4,"modelo":"BYD/SONG","quantidade":3207},{"posicao":5,"modelo":"HYUNDAI/HB20","quantidade":3122},{"posicao":6,"modelo":"VW/POLO","quantidade":3066},{"posicao":7,"modelo":"FIAT/FASTBACK","quantidade":2890},{"posicao":8,"modelo":"GM/ONIX","quantidade":2844},{"posicao":9,"modelo":"BYD/DOLPHIN MINI","quantidade":2797},{"posicao":10,"modelo":"VW/NIVUS","quantidade":2631},{"posicao":11,"modelo":"VW/T CROSS","quantidade":2578},{"posicao":12,"modelo":"NISSAN/KICKS","quantidade":2378},{"posicao":13,"modelo":"FIAT/PULSE","quantidade":2207},{"posicao":14,"modelo":"FIAT/ARGO","quantidade":2148},{"posicao":15,"modelo":"HONDA/HR-V","quantidade":2092}],"Fevereiro/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN MINI","quantidade":4810},{"posicao":2,"modelo":"VW/TERA","quantidade":3856},{"posicao":3,"modelo":"HYUNDAI/CRETA","quantidade":3597},{"posicao":4,"modelo":"BYD/SONG","quantidade":3167},{"posicao":5,"modelo":"GM/TRACKER","quantidade":3023},{"posicao":6,"modelo":"VW/NIVUS","quantidade":2971},{"posicao":7,"modelo":"VW/POLO","quantidade":2831},{"posicao":8,"modelo":"HONDA/WR-V","quantidade":2617},{"posicao":9,"modelo":"HYUNDAI/HB20","quantidade":2559},{"posicao":10,"modelo":"FIAT/FASTBACK","quantidade":2464},{"posicao":11,"modelo":"GWM/HAVAL H6","quantidade":2399},{"posicao":12,"modelo":"CAOA CHERY/TIGGO 7","quantidade":2172},{"posicao":13,"modelo":"TOYOTA/COROLLA CROSS","quantidade":2111},{"posicao":14,"modelo":"GM/ONIX","quantidade":2080},{"posicao":15,"modelo":"HONDA/HR-V","quantidade":2036}],"Março/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN MINI","quantidade":6077},{"posicao":2,"modelo":"CAOA CHERY/TIGGO 5X","quantidade":5005},{"posicao":3,"modelo":"HYUNDAI/CRETA","quantidade":4803},{"posicao":4,"modelo":"VW/TERA","quantidade":4505},{"posicao":5,"modelo":"VW/NIVUS","quantidade":4225},{"posicao":6,"modelo":"GM/TRACKER","quantidade":3979},{"posicao":7,"modelo":"BYD/SONG","quantidade":3789},{"posicao":8,"modelo":"VW/POLO","quantidade":3646},{"posicao":9,"modelo":"TOYOTA/YARIS CROSS","quantidade":3341},{"posicao":10,"modelo":"GM/ONIX","quantidade":3248},{"posicao":11,"modelo":"HONDA/WR-V","quantidade":2920},{"posicao":12,"modelo":"HYUNDAI/HB20","quantidade":2917},{"posicao":13,"modelo":"GWM/HAVAL H6","quantidade":2913},{"posicao":14,"modelo":"HONDA/HR-V","quantidade":2900},{"posicao":15,"modelo":"VW/T CROSS","quantidade":2831}],"Abril/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN MINI","quantidade":5943},{"posicao":2,"modelo":"HYUNDAI/CRETA","quantidade":4895},{"posicao":3,"modelo":"BYD/SONG","quantidade":4078},{"posicao":4,"modelo":"CAOA CHERY/TIGGO 5X","quantidade":3915},{"posicao":5,"modelo":"VW/NIVUS","quantidade":3857},{"posicao":6,"modelo":"GM/TRACKER","quantidade":3672},{"posicao":7,"modelo":"GEELY/EX2","quantidade":3590},{"posicao":8,"modelo":"VW/TERA","quantidade":3470},{"posicao":9,"modelo":"TOYOTA/YARIS CROSS","quantidade":3431},{"posicao":10,"modelo":"VW/POLO","quantidade":3238},{"posicao":11,"modelo":"HONDA/HR-V","quantidade":3042},{"posicao":12,"modelo":"GM/ONIX","quantidade":2972},{"posicao":13,"modelo":"BYD/DOLPHIN","quantidade":2811},{"posicao":14,"modelo":"FIAT/FASTBACK","quantidade":2755},{"posicao":15,"modelo":"VW/T CROSS","quantidade":2655}],"Maio/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN MINI","quantidade":6478},{"posicao":2,"modelo":"HYUNDAI/CRETA","quantidade":4821},{"posicao":3,"modelo":"GEELY/EX2","quantidade":4250},{"posicao":4,"modelo":"BYD/DOLPHIN","quantidade":4163},{"posicao":5,"modelo":"BYD/SONG","quantidade":4029},{"posicao":6,"modelo":"GM/TRACKER","quantidade":3357},{"posicao":7,"modelo":"TOYOTA/YARIS CROSS","quantidade":3214},{"posicao":8,"modelo":"GWM/HAVAL H6","quantidade":3213},{"posicao":9,"modelo":"VW/NIVUS","quantidade":3177},{"posicao":10,"modelo":"GM/ONIX","quantidade":3121},{"posicao":11,"modelo":"VW/T CROSS","quantidade":3100},{"posicao":12,"modelo":"VW/TERA","quantidade":3060},{"posicao":13,"modelo":"VW/POLO","quantidade":2842},{"posicao":14,"modelo":"HONDA/HR-V","quantidade":2789},{"posicao":15,"modelo":"HYUNDAI/HB20","quantidade":2658}],"Junho/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN MINI","quantidade":5143},{"posicao":2,"modelo":"BYD/DOLPHIN","quantidade":4827},{"posicao":3,"modelo":"GEELY/EX2","quantidade":4363},{"posicao":4,"modelo":"BYD/SONG","quantidade":4146},{"posicao":5,"modelo":"HYUNDAI/CRETA","quantidade":4095},{"posicao":6,"modelo":"CAOA CHERY/TIGGO 5X","quantidade":3823},{"posicao":7,"modelo":"VW/T CROSS","quantidade":3433},{"posicao":8,"modelo":"VW/TERA","quantidade":3409},{"posicao":9,"modelo":"TOYOTA/YARIS CROSS","quantidade":3395},{"posicao":10,"modelo":"VW/NIVUS","quantidade":3381},{"posicao":11,"modelo":"VW/POLO","quantidade":3021},{"posicao":12,"modelo":"GM/TRACKER","quantidade":3008},{"posicao":13,"modelo":"GM/ONIX","quantidade":2994},{"posicao":14,"modelo":"FIAT/FASTBACK","quantidade":2934},{"posicao":15,"modelo":"OMODA JAECOO/JAECOO 7","quantidade":2730}],"Julho/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN","quantidade":5861},{"posicao":2,"modelo":"GEELY/EX2","quantidade":5707},{"posicao":3,"modelo":"BYD/DOLPHIN MINI","quantidade":5537},{"posicao":4,"modelo":"VW/TERA","quantidade":4470},{"posicao":5,"modelo":"HYUNDAI/CRETA","quantidade":4185},{"posicao":6,"modelo":"TOYOTA/YARIS CROSS","quantidade":4096},{"posicao":7,"modelo":"GM/TRACKER","quantidade":4091},{"posicao":8,"modelo":"GWM/HAVAL H6","quantidade":3841},{"posicao":9,"modelo":"CAOA CHERY/TIGGO 5X","quantidade":3828},{"posicao":10,"modelo":"BYD/SONG","quantidade":3814},{"posicao":11,"modelo":"GM/ONIX","quantidade":3620},{"posicao":12,"modelo":"VW/POLO","quantidade":3510},{"posicao":13,"modelo":"VW/NIVUS","quantidade":3283},{"posicao":14,"modelo":"VW/T CROSS","quantidade":3165},{"posicao":15,"modelo":"FIAT/FASTBACK","quantidade":3064}],"Agosto/2026":[{"posicao":1,"modelo":"BYD/DOLPHIN","quantidade":5964},{"posicao":2,"modelo":"BYD/DOLPHIN MINI","quantidade":5820},{"posicao":3,"modelo":"GEELY/EX2","quantidade":5488},{"posicao":4,"modelo":"GWM/HAVAL H6","quantidade":5266},{"posicao":5,"modelo":"VW/TERA","quantidade":4560},{"posicao":6,"modelo":"BYD/SONG","quantidade":4121},{"posicao":7,"modelo":"GM/TRACKER","quantidade":4077},{"posicao":8,"modelo":"HYUNDAI/CRETA","quantidade":3763},{"posicao":9,"modelo":"GM/ONIX","quantidade":3555},{"posicao":10,"modelo":"VW/POLO","quantidade":3539},{"posicao":11,"modelo":"OMODA JAECOO/OMODA 5","quantidade":3344},{"posicao":12,"modelo":"TOYOTA/YARIS CROSS","quantidade":3325},{"posicao":13,"modelo":"CAOA CHERY/TIGGO 5X","quantidade":3258},{"posicao":14,"modelo":"VW/NIVUS","quantidade":2924},{"posicao":15,"modelo":"FIAT/FASTBACK","quantidade":2885}]},
 };
 
 // EN: traduz os rótulos de mês do eixo X (display-only; as chaves de D.varejo continuam em PT)
@@ -486,25 +491,25 @@ function pct(a, b) { return b ? ((a-b)/b*100).toFixed(1) : '—'; }
 
   document.getElementById('kpi-geral').innerHTML = `
     <div class="kpi">
-      <div class="kpi-label">${t('Emplacamentos — Jul/2026','Registrations — Jul/2026')}</div>
+      <div class="kpi-label">${t('Emplacamentos — Ago/2026','Registrations — Ago/2026')}</div>
       <div class="kpi-value">${fmt(last)}</div>
-      <div class="kpi-delta ${yoyV>=0?'up':'down'}">${yoyV>=0?'▲':'▼'} ${Math.abs(yoyV)}% ${t('vs Jul/2025 (YoY)','vs Jul/2025 (YoY)')}</div>
+      <div class="kpi-delta ${yoyV>=0?'up':'down'}">${yoyV>=0?'▲':'▼'} ${Math.abs(yoyV)}% ${t('vs Ago/2025 (YoY)','vs Ago/2025 (YoY)')}</div>
       <div class="kpi-delta ${momV>=0?'up':'down'}" style="margin-top:2px">${momV>=0?'▲':'▼'} ${Math.abs(momV)}% ${t('vs Jun/2026 (MoM)','vs Jun/2026 (MoM)')}</div>
     </div>
     <div class="kpi red">
       <div class="kpi-label">${t('Market Share Chineses','Chinese Brands Market Share')}</div>
       <div class="kpi-value">${chShare}%</div>
-      <div class="kpi-sub">+${chDelta} ${t('p.p. vs Jul/2025 · inclui Geely, GAC, OMODA','p.p. vs Jul/2025 · incl. Geely, GAC, OMODA')}</div>
+      <div class="kpi-sub">+${chDelta} ${t('p.p. vs Ago/2025 · inclui Geely, GAC, OMODA','p.p. vs Ago/2025 · incl. Geely, GAC, OMODA')}</div>
     </div>
     <div class="kpi green">
-      <div class="kpi-label">${t('Eletrificados — Jul/2026','Electrified — Jul/2026')}</div>
+      <div class="kpi-label">${t('Eletrificados — Ago/2026','Electrified — Ago/2026')}</div>
       <div class="kpi-value">${fmt(totalHibEle)}</div>
       <div class="kpi-sub">${hibElePct}% ${t('dos autos emplacados','of cars registered')}</div>
     </div>
     <div class="kpi orange">
-      <div class="kpi-label">${t('Elétricos Puros — Jul/2026','Pure EVs — Jul/2026')}</div>
+      <div class="kpi-label">${t('Elétricos Puros — Ago/2026','Pure EVs — Ago/2026')}</div>
       <div class="kpi-value">${fmt(D.ele[n])}</div>
-      <div class="kpi-delta up">▲ ${pct(D.ele[n], D.ele[base])}% ${t('vs Jul/2025','vs Jul/2025')}</div>
+      <div class="kpi-delta up">▲ ${pct(D.ele[n], D.ele[base])}% ${t('vs Ago/2025','vs Ago/2025')}</div>
     </div>
   `;
 })();
@@ -641,8 +646,8 @@ new Chart(document.getElementById('chartAutos'), {
     const shareArr = calcShare();
     const last = shareArr[shareArr.length - 1];
     const note = active.size === allNames.length
-      ? t(`Market share total das marcas chinesas em Jul/2026: <strong>${last}%</strong>`, `Total Chinese brands market share in Jul/2026: <strong>${last}%</strong>`)
-      : t(`Market share das marcas selecionadas em Jul/2026: <strong>${last}%</strong> (de ${D.chShare[D.chShare.length-1]}% total)`, `Selected brands market share in Jul/2026: <strong>${last}%</strong> (of ${D.chShare[D.chShare.length-1]}% total)`);
+      ? t(`Market share total das marcas chinesas em Ago/2026: <strong>${last}%</strong>`, `Total Chinese brands market share in Ago/2026: <strong>${last}%</strong>`)
+      : t(`Market share das marcas selecionadas em Ago/2026: <strong>${last}%</strong> (de ${D.chShare[D.chShare.length-1]}% total)`, `Selected brands market share in Ago/2026: <strong>${last}%</strong> (of ${D.chShare[D.chShare.length-1]}% total)`);
     document.getElementById('shareNote').innerHTML = note;
   }
 
@@ -766,7 +771,7 @@ buildMarcas();
     type: 'bar',
     data: {
       labels: sorted,
-      datasets: [{ label: mesShort('Jul/2026'), data: sorted.map(m => D.marcas[m][n]), backgroundColor: sorted.map((_,i) => PAL[i]) }]
+      datasets: [{ label: mesShort('Ago/2026'), data: sorted.map(m => D.marcas[m][n]), backgroundColor: sorted.map((_,i) => PAL[i]) }]
     },
     options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + fmt(ctx.raw) } } },
@@ -801,22 +806,22 @@ buildMarcas();
   const shareGrowth = (D.chShare[n] - D.chShare[n0]).toFixed(2);
   const chGrowth = pct(D.ch[n], D.ch[n0]);
   document.getElementById('kpi-chineses').innerHTML = `
-    <div class="kpi red"><div class="kpi-label">${t('Share Chineses — Jul/2026','Chinese Share — Jul/2026')}</div>
+    <div class="kpi red"><div class="kpi-label">${t('Share Chineses — Ago/2026','Chinese Share — Ago/2026')}</div>
       <div class="kpi-value">${D.chShare[n]}%</div>
-      <div class="kpi-delta up">▲ +${shareGrowth} ${t('p.p. vs Jul/2025','p.p. vs Jul/2025')}</div></div>
-    <div class="kpi red"><div class="kpi-label">${t('Volume Chineses — Jul/2026','Chinese Volume — Jul/2026')}</div>
+      <div class="kpi-delta up">▲ +${shareGrowth} ${t('p.p. vs Ago/2025','p.p. vs Ago/2025')}</div></div>
+    <div class="kpi red"><div class="kpi-label">${t('Volume Chineses — Ago/2026','Chinese Volume — Ago/2026')}</div>
       <div class="kpi-value">${fmt(D.ch[n])}</div>
-      <div class="kpi-delta up">▲ +${chGrowth}% ${t('vs Jul/2025','vs Jul/2025')}</div></div>
-    <div class="kpi"><div class="kpi-label">${t('ex-Chineses — Jul/2026','Non-Chinese — Jul/2026')}</div>
+      <div class="kpi-delta up">▲ +${chGrowth}% ${t('vs Ago/2025','vs Ago/2025')}</div></div>
+    <div class="kpi"><div class="kpi-label">${t('ex-Chineses — Ago/2026','Non-Chinese — Ago/2026')}</div>
       <div class="kpi-value">${fmt(D.excl[n])}</div>
-      <div class="kpi-delta ${pct(D.excl[n],D.excl[n0])>=0?'up':'down'}">${+pct(D.excl[n],D.excl[n0])>=0?'▲':'▼'} ${Math.abs(pct(D.excl[n],D.excl[n0]))}% ${t('vs Jul/2025','vs Jul/2025')}</div></div>
+      <div class="kpi-delta ${pct(D.excl[n],D.excl[n0])>=0?'up':'down'}">${+pct(D.excl[n],D.excl[n0])>=0?'▲':'▼'} ${Math.abs(pct(D.excl[n],D.excl[n0]))}% ${t('vs Ago/2025','vs Ago/2025')}</div></div>
     <div class="kpi red"><div class="kpi-label">${t('BYD — Share nos Chineses','BYD — Share of Chinese')}</div>
       <div class="kpi-value">${(D.chMarcas.BYD[n]/D.ch[n]*100).toFixed(1)}%</div>
       <div class="kpi-sub">${t('Maior marca chinesa','Largest Chinese brand')}</div></div>
   `;
   document.getElementById('insight-ch').innerHTML = t(
-    `<strong>📈 Avanço expressivo:</strong> Incluindo Geely, GAC e OMODA JAECOO, os chineses saltaram de <strong>${D.chShare[n0]}%</strong> (Jul/2025) para <strong>${D.chShare[n]}%</strong> (Jul/2026) — <strong>+${shareGrowth} pontos percentuais</strong> em 1 ano. BYD lidera com ${fmt(D.chMarcas.BYD[n])} unidades, seguida de GWM (${fmt(D.chMarcas.GWM[n])}), CAOA CHERY (${fmt(D.chMarcas['CAOA CHERY'][n])}) e Geely, que saiu do zero para ${fmt(D.chMarcas.GEELY[n])} unidades em apenas 7 meses.`,
-    `<strong>📈 Strong advance:</strong> Including Geely, GAC and OMODA JAECOO, Chinese brands jumped from <strong>${D.chShare[n0]}%</strong> (Jul/2025) to <strong>${D.chShare[n]}%</strong> (Jul/2026) — <strong>+${shareGrowth} percentage points</strong> in one year. BYD leads with ${fmt(D.chMarcas.BYD[n])} units, followed by GWM (${fmt(D.chMarcas.GWM[n])}), CAOA CHERY (${fmt(D.chMarcas['CAOA CHERY'][n])}) and Geely, which went from zero to ${fmt(D.chMarcas.GEELY[n])} units in just 7 months.`);
+    `<strong>📈 Avanço expressivo:</strong> Incluindo Geely, GAC e OMODA JAECOO, os chineses saltaram de <strong>${D.chShare[n0]}%</strong> (Ago/2025) para <strong>${D.chShare[n]}%</strong> (Ago/2026) — <strong>+${shareGrowth} pontos percentuais</strong> em 1 ano. BYD lidera com ${fmt(D.chMarcas.BYD[n])} unidades, seguida de GWM (${fmt(D.chMarcas.GWM[n])}), CAOA CHERY (${fmt(D.chMarcas['CAOA CHERY'][n])}) e Geely, que saiu do zero para ${fmt(D.chMarcas.GEELY[n])} unidades em apenas 7 meses.`,
+    `<strong>📈 Strong advance:</strong> Including Geely, GAC and OMODA JAECOO, Chinese brands jumped from <strong>${D.chShare[n0]}%</strong> (Ago/2025) to <strong>${D.chShare[n]}%</strong> (Ago/2026) — <strong>+${shareGrowth} percentage points</strong> in one year. BYD leads with ${fmt(D.chMarcas.BYD[n])} units, followed by GWM (${fmt(D.chMarcas.GWM[n])}), CAOA CHERY (${fmt(D.chMarcas['CAOA CHERY'][n])}) and Geely, which went from zero to ${fmt(D.chMarcas.GEELY[n])} units in just 7 months.`);
 })();
 
 // CHINESES — SHARE LINE
@@ -922,22 +927,22 @@ new Chart(document.getElementById('chartChStack'), {
   const base = n - 12;
   const totLast = D.hib[n]+D.ele[n], tot0 = D.hib[base]+D.ele[base];
   document.getElementById('kpi-eletri').innerHTML = `
-    <div class="kpi green"><div class="kpi-label">${t('Total Eletrificados — Jul/2026','Total Electrified — Jul/2026')}</div>
+    <div class="kpi green"><div class="kpi-label">${t('Total Eletrificados — Ago/2026','Total Electrified — Ago/2026')}</div>
       <div class="kpi-value">${fmt(totLast)}</div>
-      <div class="kpi-delta up">▲ +${pct(totLast,tot0)}% ${t('vs Jul/2025','vs Jul/2025')}</div></div>
-    <div class="kpi green"><div class="kpi-label">${t('Híbridos — Jul/2026','Hybrids — Jul/2026')}</div>
+      <div class="kpi-delta up">▲ +${pct(totLast,tot0)}% ${t('vs Ago/2025','vs Ago/2025')}</div></div>
+    <div class="kpi green"><div class="kpi-label">${t('Híbridos — Ago/2026','Hybrids — Ago/2026')}</div>
       <div class="kpi-value">${fmt(D.hib[n])}</div>
-      <div class="kpi-delta up">▲ +${pct(D.hib[n],D.hib[base])}% ${t('vs Jul/2025','vs Jul/2025')}</div></div>
-    <div class="kpi green"><div class="kpi-label">${t('Elétricos — Jul/2026','EVs — Jul/2026')}</div>
+      <div class="kpi-delta up">▲ +${pct(D.hib[n],D.hib[base])}% ${t('vs Ago/2025','vs Ago/2025')}</div></div>
+    <div class="kpi green"><div class="kpi-label">${t('Elétricos — Ago/2026','EVs — Ago/2026')}</div>
       <div class="kpi-value">${fmt(D.ele[n])}</div>
-      <div class="kpi-delta up">▲ +${pct(D.ele[n],D.ele[base])}% ${t('vs Jul/2025','vs Jul/2025')}</div></div>
-    <div class="kpi"><div class="kpi-label">${t('Share Eletrificados — Jul/2026','Electrified Share — Jul/2026')}</div>
+      <div class="kpi-delta up">▲ +${pct(D.ele[n],D.ele[base])}% ${t('vs Ago/2025','vs Ago/2025')}</div></div>
+    <div class="kpi"><div class="kpi-label">${t('Share Eletrificados — Ago/2026','Electrified Share — Ago/2026')}</div>
       <div class="kpi-value">${(totLast/D.autos[n]*100).toFixed(1)}%</div>
       <div class="kpi-sub">${t('do total de automóveis','of total passenger cars')}</div></div>
   `;
   document.getElementById('insight-ele').innerHTML = t(
-    `<strong>⚡ Crescimento acelerado:</strong> Os eletrificados mais que dobraram de ${fmt(tot0)} em Jul/2025 para ${fmt(totLast)} em Jul/2026 (+${pct(totLast,tot0)}%). O BYD domina tanto no segmento elétrico puro quanto no híbrido. Destaque para a <strong>Geely/ZEEKR</strong>, que saiu do zero e chegou a ${fmt(D.eleMarcas.GEELY[n])} elétricos em Jul/2026.`,
-    `<strong>⚡ Accelerated growth:</strong> Electrified vehicles more than doubled from ${fmt(tot0)} in Jul/2025 to ${fmt(totLast)} in Jul/2026 (+${pct(totLast,tot0)}%). BYD dominates both the pure-EV and hybrid segments. Highlight for <strong>Geely/ZEEKR</strong>, which went from zero to ${fmt(D.eleMarcas.GEELY[n])} EVs in Jul/2026.`);
+    `<strong>⚡ Crescimento acelerado:</strong> Os eletrificados mais que dobraram de ${fmt(tot0)} em Ago/2025 para ${fmt(totLast)} em Ago/2026 (+${pct(totLast,tot0)}%). O BYD domina tanto no segmento elétrico puro quanto no híbrido. Destaque para a <strong>Geely/ZEEKR</strong>, que saiu do zero e chegou a ${fmt(D.eleMarcas.GEELY[n])} elétricos em Ago/2026.`,
+    `<strong>⚡ Accelerated growth:</strong> Electrified vehicles more than doubled from ${fmt(tot0)} in Ago/2025 to ${fmt(totLast)} in Ago/2026 (+${pct(totLast,tot0)}%). BYD dominates both the pure-EV and hybrid segments. Highlight for <strong>Geely/ZEEKR</strong>, which went from zero to ${fmt(D.eleMarcas.GEELY[n])} EVs in Ago/2026.`);
 })();
 
 // ELETRIFICADOS — LINHA
@@ -989,10 +994,10 @@ new Chart(document.getElementById('chartEletri'), {
 // ══════════════════════════════════════════════
 let chartYoyModelos = null;
 
-// Calcular YoY: Julho/2026 vs Julho/2025
+// Calcular YoY: Agosto/2026 vs Agosto/2025
 const yoyModels = (() => {
-  const now  = D.varejo['Julho/2026'] || [];
-  const prev = D.varejo['Julho/2025'] || [];
+  const now  = D.varejo['Agosto/2026'] || [];
+  const prev = D.varejo['Agosto/2025'] || [];
   const prevMap = {};
   prev.forEach(m => prevMap[m.modelo] = m.quantidade);
 
@@ -1055,8 +1060,8 @@ function updateYoyChart() {
               const m = data[ctx.dataIndex];
               return [
                 ` YoY: ${ctx.raw > 0 ? '+' : ''}${ctx.raw}%`,
-                ` ${t('Jul/2026','Jul/2026')}: ${fmt(m.atual)}${t(' un.',' units')}`,
-                ` ${t('Jul/2025','Jul/2025')}: ${fmt(m.anterior)}${t(' un.',' units')}`,
+                ` ${t('Ago/2026','Ago/2026')}: ${fmt(m.atual)}${t(' un.',' units')}`,
+                ` ${t('Ago/2025','Ago/2025')}: ${fmt(m.anterior)}${t(' un.',' units')}`,
               ];
             }
           }
@@ -1188,7 +1193,7 @@ function dlCSV(canvasId, filename) {
       const neg = data.filter(m => m.yoy < 0).sort((a,b) => a.yoy-b.yoy).slice(0, Math.floor(top/2));
       data = [...neg.reverse(), ...pos];
     } else { data = data.slice(0, top); }
-    let csv = 'Modelo,Jul/2026,Jul/2025,Crescimento YoY (%)\n';
+    let csv = 'Modelo,Ago/2026,Ago/2025,Crescimento YoY (%)\n';
     data.forEach(m => { csv += `"${m.modelo}",${m.atual},${m.anterior},${m.yoy}\n`; });
     return triggerDownload(csv, filename + '.csv');
   }
@@ -1313,4 +1318,4 @@ function showTab(id) {
 </div><!-- /app -->
 </body>
 </html>
-<!-- build-marker: dados ate Julho/2026 | re-save 2026-08-11 -->
+<!-- build-marker: dados ate Agosto/2026 | re-save 2026-09-03 -->
