@@ -159,7 +159,9 @@
   .lang-btn {
     padding: 4px 11px; border-radius: 6px; border: 1px solid rgba(255,255,255,.25);
     background: transparent; color: rgba(255,255,255,.7); font-size: .75rem; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px; line-height: 1;
   }
+  .lang-btn svg { display: block; box-shadow: 0 0 0 1px rgba(0,0,0,.15); }
   .lang-btn:hover { color: #fff; border-color: rgba(255,255,255,.5); }
   .lang-btn.on { background: #FF5300; border-color: #FF5300; color: #fff; }
 
@@ -188,8 +190,8 @@
   </div>
   <div style="display:flex;align-items:center;gap:14px">
     <div style="display:flex;gap:5px">
-      <button id="langPt" class="lang-btn on" onclick="setLang('pt')">PT</button>
-      <button id="langEn" class="lang-btn" onclick="setLang('en')">EN</button>
+      <button id="langPt" class="lang-btn on" onclick="setLang('pt')" title="Português"><svg viewBox="0 0 28 20" width="17" height="12" style="border-radius:2px;flex:none"><rect width="28" height="20" fill="#009b3a"/><path d="M14 2.5 25.5 10 14 17.5 2.5 10Z" fill="#fedf00"/><circle cx="14" cy="10" r="4" fill="#002776"/></svg>PT</button>
+      <button id="langEn" class="lang-btn" onclick="setLang('en')" title="English"><svg viewBox="0 0 60 30" width="17" height="12" style="border-radius:2px;flex:none"><clipPath id="ukFena"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="4" clip-path="url(#ukFena)"/><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></svg>EN</button>
     </div>
     <div class="badge" data-en="14 months of data">14 meses de dados</div>
   </div>
